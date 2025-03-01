@@ -384,9 +384,9 @@ defmodule ClimbStrengthTestWeb.HomeLive do
                   </thead>
                   <tbody>
                     <%= for grade <- Enum.filter(@grade_scale, fn g ->
-                      (String.contains?(g.grade, "7") && !g.grade in ["7a", "7a+"]) ||
-                      (String.contains?(g.grade, "8a"))
-                    end) do %>
+                    (String.contains?(g.grade, "7") && g.grade not in ["7a", "7a+"]) ||
+                    (String.contains?(g.grade, "8a"))
+                  end) do %>
                       <tr class={"border #{if @climbing_grade && @climbing_grade.points == grade.points, do: "bg-blue-100", else: ""}"}>
                         <td class="p-2 border text-center">{grade.points}</td>
                         <td class="p-2 border font-medium text-center">{grade.grade}</td>
