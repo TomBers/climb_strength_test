@@ -1,6 +1,6 @@
 defmodule ClimbStrengthTestWeb.HomeLive do
   use ClimbStrengthTestWeb, :live_view
-  alias Phoenix.HTML.Form
+  # alias Phoenix.HTML.Form
 
   def mount(_params, _session, socket) do
     # Climbing grade scale
@@ -104,9 +104,9 @@ defmodule ClimbStrengthTestWeb.HomeLive do
           %{points: 2, description: "1 min", fixed_target: true},
           %{points: 3, description: "1,5 min", fixed_target: true},
           %{points: 4, description: "2 min", fixed_target: true},
-          %{points: 5, description: "2,5 min", fixed_target: true},
+          %{points: 5, description: "2 min 30 sec", fixed_target: true},
           %{points: 6, description: "3 min", fixed_target: true},
-          %{points: 7, description: "3,5 min", fixed_target: true},
+          %{points: 7, description: "3 min 30 sec", fixed_target: true},
           %{points: 8, description: "4 min", fixed_target: true},
           %{points: 9, description: "5 min", fixed_target: true},
           %{points: 10, description: "6 min", fixed_target: true}
@@ -177,7 +177,7 @@ defmodule ClimbStrengthTestWeb.HomeLive do
 
   def calculate_weight(body_weight, percentage)
       when is_number(body_weight) and is_number(percentage) do
-    weight = body_weight * percentage
+    weight = body_weight * percentage - body_weight
     "#{Float.round(weight, 1)} kg"
   end
 
@@ -190,7 +190,7 @@ defmodule ClimbStrengthTestWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <div class="container mx-auto p-6">
-      <h1 class="text-3xl font-bold mb-6">Exercise Training Program</h1>
+      <h1 class="text-3xl font-bold mb-6">9c Climbing Strength Test</h1>
 
       <div class="mb-8 p-4 bg-gray-100 rounded">
         <form phx-change="update_weight">
@@ -279,7 +279,9 @@ defmodule ClimbStrengthTestWeb.HomeLive do
                     <th class="p-2 text-left">Points</th>
                     <th class="p-2 text-left">Target</th>
                     <%= if exercise.points |> Enum.any?(& Map.has_key?(&1, :percentage)) do %>
-                      <th class="p-2 text-left">Weight ({if @body_weight, do: "kg", else: "%"})</th>
+                      <th class="p-2 text-left">
+                        Additional Weight ({if @body_weight, do: "kg", else: "%"})
+                      </th>
                     <% end %>
                     <th class="p-2 text-left">Select</th>
                   </tr>
@@ -402,14 +404,16 @@ defmodule ClimbStrengthTestWeb.HomeLive do
                   <div>
                     <p>Based on your total score of <strong>{@total_score} points</strong></p>
                     <%= if @total_score < 40 do %>
-                      <p class="text-gray-600 text-sm mt-1">
-                        You need {@grade_scale
-                        |> Enum.find(fn g -> g.points == @climbing_grade.points - 1 end)
-                        |> Map.get(:points)
-                        |> then(fn p -> @total_score - p + 1 end)} more points to reach {@grade_scale
-                        |> Enum.find(fn g -> g.points == @climbing_grade.points - 1 end)
-                        |> Map.get(:grade)}
-                      </p>
+                      <% # Find the next better grade (which has lower points in the scale)
+                      next_grade =
+                        @grade_scale
+                        |> Enum.reverse()
+                        |> Enum.find(fn g -> g.points > @total_score end) %>
+                      <%= if next_grade do %>
+                        <p class="text-gray-600 text-sm mt-1">
+                          You need {next_grade.points - @total_score} more points to reach {next_grade.grade}
+                        </p>
+                      <% end %>
                     <% end %>
                   </div>
                 </div>
