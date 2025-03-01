@@ -102,7 +102,7 @@ defmodule ClimbStrengthTestWeb.HomeLive do
         points: [
           %{points: 1, description: "30 sec", fixed_target: true},
           %{points: 2, description: "1 min", fixed_target: true},
-          %{points: 3, description: "1,5 min", fixed_target: true},
+          %{points: 3, description: "1min 30 sec", fixed_target: true},
           %{points: 4, description: "2 min", fixed_target: true},
           %{points: 5, description: "2 min 30 sec", fixed_target: true},
           %{points: 6, description: "3 min", fixed_target: true},
@@ -328,6 +328,30 @@ defmodule ClimbStrengthTestWeb.HomeLive do
               </button>
             </div>
 
+            <%= if @climbing_grade do %>
+              <div class="mt-4 mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 class="font-semibold text-lg mb-2">Your Current Grade:</h3>
+                <div class="flex items-center">
+                  <span class="text-4xl font-bold text-blue-600 mr-4">{@climbing_grade.grade}</span>
+                  <div>
+                    <p>Based on your total score of <strong>{@total_score} points</strong></p>
+                    <%= if @total_score < 40 do %>
+                      <% # Find the next better grade (which has lower points in the scale)
+                      next_grade =
+                        @grade_scale
+                        |> Enum.reverse()
+                        |> Enum.find(fn g -> g.points > @total_score end) %>
+                      <%= if next_grade do %>
+                        <p class="text-gray-600 text-sm mt-1">
+                          You need {next_grade.points - @total_score} more points to reach {next_grade.grade}
+                        </p>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <h3 class="font-semibold mb-3 text-lg">Beginner (6a-7a)</h3>
@@ -395,30 +419,6 @@ defmodule ClimbStrengthTestWeb.HomeLive do
                 </table>
               </div>
             </div>
-
-            <%= if @climbing_grade do %>
-              <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 class="font-semibold text-lg mb-2">Your Current Grade:</h3>
-                <div class="flex items-center">
-                  <span class="text-4xl font-bold text-blue-600 mr-4">{@climbing_grade.grade}</span>
-                  <div>
-                    <p>Based on your total score of <strong>{@total_score} points</strong></p>
-                    <%= if @total_score < 40 do %>
-                      <% # Find the next better grade (which has lower points in the scale)
-                      next_grade =
-                        @grade_scale
-                        |> Enum.reverse()
-                        |> Enum.find(fn g -> g.points > @total_score end) %>
-                      <%= if next_grade do %>
-                        <p class="text-gray-600 text-sm mt-1">
-                          You need {next_grade.points - @total_score} more points to reach {next_grade.grade}
-                        </p>
-                      <% end %>
-                    <% end %>
-                  </div>
-                </div>
-              </div>
-            <% end %>
 
             <div class="mt-6 flex justify-end">
               <button
